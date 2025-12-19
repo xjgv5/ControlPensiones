@@ -30,7 +30,7 @@ const Sidebar = () => {
     const menuItems = [
         { path: '/dashboard', icon: faHome, label: 'Dashboard' },
         { path: '/create-pension', icon: faPlusCircle, label: 'Crear Pensión' },
-        { path: '/active-pensions', icon: faList, label: 'Pensiones Activas' },
+        { path: '/active-pensions', icon: faList, label: 'Ver Pensiones' },
         ...(currentUser?.isSuperUser
             ? [{ path: '/config', icon: faCog, label: 'Configuración' }]
             : []
