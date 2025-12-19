@@ -1,11 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import {
+    getAuth, // ← AGREGAR ESTA IMPORTACIÓN
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
     updateEmail,
     updatePassword,
-    createUserWithEmailAndPassword // ← AGREGAR ESTA IMPORTACIÓN
+    createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
@@ -61,23 +62,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Función para crear nuevos usuarios (solo superusuario)
+    // Función para crear nuevos usuarios (solo superusuario) - SIN CAMBIAR SESIÓN
     const createNewUser = async (email, password, isSuperUser = false, nickname = '') => {
         if (!currentUser?.isSuperUser) {
             throw new Error('Solo los superusuarios pueden crear nuevos usuarios');
         }
 
         try {
-            // 1. Crear usuario en Authentication
+            // SOLUCIÓN CORREGIDA: No usar getAuth() separado, usar el auth existente
+            // Creamos el usuario directamente con el auth actual
             const userCredential = await createUserWithEmailAndPassword(
-                auth,
+                auth, // Usamos la misma instancia de auth
                 email,
                 password
             );
 
             const userId = userCredential.user.uid;
 
-            // 2. Crear documento en Firestore
+            // Crear documento en Firestore
             await setDoc(doc(db, 'users', userId), {
                 email: email,
                 nickname: nickname || email.split('@')[0],
@@ -86,13 +88,40 @@ export const AuthProvider = ({ children }) => {
                 createdByEmail: currentUser.email,
                 createdAt: new Date(),
                 status: 'active',
-                requiresPasswordChange: true // Bandera para primer inicio
+                requiresPasswordChange: true
             });
 
-            return { success: true, userId };
+            return {
+                success: true,
+                userId,
+                email,
+                message: 'Usuario creado exitosamente'
+            };
+
         } catch (error) {
             console.error('Error creating user:', error);
-            throw error;
+
+            // Manejo específico de errores
+            let customMessage = 'Error al crear el usuario';
+
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    customMessage = 'El correo electrónico ya está registrado';
+                    break;
+                case 'auth/invalid-email':
+                    customMessage = 'El correo electrónico no es válido';
+                    break;
+                case 'auth/operation-not-allowed':
+                    customMessage = 'La creación de usuarios está deshabilitada';
+                    break;
+                case 'auth/weak-password':
+                    customMessage = 'La contraseña es demasiado débil (mínimo 6 caracteres)';
+                    break;
+                default:
+                    customMessage = error.message || customMessage;
+            }
+
+            throw new Error(customMessage);
         }
     };
 
@@ -103,9 +132,11 @@ export const AuthProvider = ({ children }) => {
                 const userData = userDoc.exists() ? userDoc.data() : {};
 
                 setCurrentUser({
-                    ...user,
+                    uid: user.uid,
+                    email: user.email,
+                    emailVerified: user.emailVerified,
                     isSuperUser: userData.isSuperUser || false,
-                    nickname: userData.nickname || user.email.split('@')[0], // Default
+                    nickname: userData.nickname || user.email?.split('@')[0] || 'Usuario',
                     ...userData
                 });
             } else {

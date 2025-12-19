@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../services/firebase';
-import { doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from '../../App'; // Importar toast
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faUserPlus,
@@ -21,10 +19,8 @@ import '../../styles/global.css';
 
 const CreateUser = () => {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
+    const { currentUser, createNewUser } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -37,6 +33,7 @@ const CreateUser = () => {
 
     // Solo superusuarios pueden crear usuarios
     if (!currentUser?.isSuperUser) {
+        toast.error('Solo los superusuarios pueden crear nuevos usuarios');
         return (
             <div className="container">
                 <div className="glass" style={{ padding: '40px', textAlign: 'center' }}>
@@ -87,6 +84,8 @@ const CreateUser = () => {
             password: password,
             confirmPassword: password
         }));
+
+        toast.info('Contraseña generada automáticamente');
     };
 
     const validateForm = () => {
@@ -115,45 +114,34 @@ const CreateUser = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
 
         const validationError = validateForm();
         if (validationError) {
-            setError(validationError);
+            toast.error(validationError);
             return;
         }
 
         setLoading(true);
 
         try {
-            // 1. Crear usuario en Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(
-                auth,
+            // Usar la función del contexto que NO cambia la sesión
+            const result = await createNewUser(
                 formData.email,
-                formData.password
+                formData.password,
+                formData.isSuperUser,
+                formData.nickname
             );
 
-            const userId = userCredential.user.uid;
-
-            // 2. Crear documento en Firestore
-            await setDoc(doc(db, 'users', userId), {
-                email: formData.email,
-                nickname: formData.nickname || formData.email.split('@')[0],
-                isSuperUser: formData.isSuperUser,
-                createdBy: currentUser.uid,
-                createdByEmail: currentUser.email,
-                createdAt: new Date(),
-                status: 'active'
-            });
-
-            // 3. Cerrar sesión del nuevo usuario (para que inicie sesión con su contraseña)
-            await auth.signOut();
-
-            // 4. Volver a iniciar sesión con el usuario original
-            await auth.signInWithEmailAndPassword(currentUser.email, currentUser.password || '');
-
-            setSuccess('Usuario creado exitosamente');
+            // Mostrar notificación de éxito
+            toast.success(
+                <div>
+                    <strong>Usuario creado exitosamente</strong>
+                    <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                        {formData.email} - {formData.isSuperUser ? 'Super Usuario' : 'Usuario Normal'}
+                    </div>
+                </div>,
+                { autoClose: 5000 }
+            );
 
             // Resetear formulario
             setFormData({
@@ -164,7 +152,7 @@ const CreateUser = () => {
                 nickname: ''
             });
 
-            // Auto-redirigir después de 2 segundos
+            // Opcional: redirigir después de 2 segundos
             setTimeout(() => {
                 navigate('/config');
             }, 2000);
@@ -173,22 +161,29 @@ const CreateUser = () => {
             console.error('Error creando usuario:', err);
 
             // Manejar errores específicos de Firebase
+            let errorMessage = 'Error al crear el usuario';
+
             switch (err.code) {
                 case 'auth/email-already-in-use':
-                    setError('El correo electrónico ya está registrado');
+                    errorMessage = 'El correo electrónico ya está registrado';
                     break;
                 case 'auth/invalid-email':
-                    setError('El correo electrónico no es válido');
+                    errorMessage = 'El correo electrónico no es válido';
                     break;
                 case 'auth/operation-not-allowed':
-                    setError('La creación de usuarios está deshabilitada');
+                    errorMessage = 'La creación de usuarios está deshabilitada';
                     break;
                 case 'auth/weak-password':
-                    setError('La contraseña es demasiado débil');
+                    errorMessage = 'La contraseña es demasiado débil';
+                    break;
+                case 'auth/network-request-failed':
+                    errorMessage = 'Error de red. Verifica tu conexión';
                     break;
                 default:
-                    setError('Error al crear el usuario: ' + err.message);
+                    errorMessage = err.message || 'Error al crear el usuario';
             }
+
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -196,9 +191,10 @@ const CreateUser = () => {
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Contraseña copiada al portapapeles');
+            toast.success('Contraseña copiada al portapapeles', { autoClose: 2000 });
         }).catch(err => {
             console.error('Error al copiar:', err);
+            toast.error('No se pudo copiar la contraseña');
         });
     };
 
@@ -234,36 +230,6 @@ const CreateUser = () => {
                     Complete el formulario para registrar un nuevo usuario en el sistema
                 </p>
             </div>
-
-            {/* Mensajes de estado */}
-            {error && (
-                <div style={{
-                    background: 'rgba(255, 0, 0, 0.1)',
-                    border: '1px solid rgba(255, 0, 0, 0.3)',
-                    borderRadius: '10px',
-                    padding: '12px',
-                    marginBottom: '20px',
-                    color: '#ff6b6b'
-                }}>
-                    {error}
-                </div>
-            )}
-
-            {success && (
-                <div style={{
-                    background: 'rgba(0, 255, 157, 0.1)',
-                    border: '1px solid rgba(0, 255, 157, 0.3)',
-                    borderRadius: '10px',
-                    padding: '12px',
-                    marginBottom: '20px',
-                    color: '#00ff9d'
-                }}>
-                    {success}
-                    <div style={{ fontSize: '12px', marginTop: '5px' }}>
-                        Redirigiendo a configuración...
-                    </div>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit}>
                 <div className="glass" style={{ padding: '30px', marginBottom: '20px' }}>
@@ -492,8 +458,7 @@ const CreateUser = () => {
                                 </label>
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '28px' }}>
-                                Los superusuarios tienen acceso completo al sistema: pueden editar todas las pensiones,
-                                gestionar usuarios y configurar nicknames.
+                                Los superusuarios tienen acceso completo al sistema.
                             </div>
                         </div>
 
