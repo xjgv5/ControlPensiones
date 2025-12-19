@@ -9,6 +9,7 @@ import CreatePension from './components/pensions/CreatePension';
 import ActivePensions from './components/pensions/ActivePensions';
 import Settings from './components/config/Settings';
 import './styles/global.css';
+import CreateUser from './components/users/CreateUser';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
                       <Route path="/active-pensions" element={<ActivePensions />} />
                       <Route path="/config" element={<Settings />} />
                       <Route path="/" element={<Navigate to="/dashboard" />} />
+                      <Route path="/create-user" element={<CreateUser />} />
                       <Route path="*" element={<Navigate to="/dashboard" />} />
                     </Routes>
                   </div>

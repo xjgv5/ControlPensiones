@@ -4,10 +4,11 @@ import {
     signOut,
     onAuthStateChanged,
     updateEmail,
-    updatePassword
+    updatePassword,
+    createUserWithEmailAndPassword // ← AGREGAR ESTA IMPORTACIÓN
 } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -46,7 +47,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         const userRef = doc(db, 'users', userId);
-        await setDoc(userRef, {
+        await updateDoc(userRef, {
             nickname: newNickname,
             updatedAt: new Date()
         }, { merge: true });
@@ -57,6 +58,41 @@ export const AuthProvider = ({ children }) => {
                 ...prev,
                 nickname: newNickname
             }));
+        }
+    };
+
+    // Función para crear nuevos usuarios (solo superusuario)
+    const createNewUser = async (email, password, isSuperUser = false, nickname = '') => {
+        if (!currentUser?.isSuperUser) {
+            throw new Error('Solo los superusuarios pueden crear nuevos usuarios');
+        }
+
+        try {
+            // 1. Crear usuario en Authentication
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            const userId = userCredential.user.uid;
+
+            // 2. Crear documento en Firestore
+            await setDoc(doc(db, 'users', userId), {
+                email: email,
+                nickname: nickname || email.split('@')[0],
+                isSuperUser: isSuperUser,
+                createdBy: currentUser.uid,
+                createdByEmail: currentUser.email,
+                createdAt: new Date(),
+                status: 'active',
+                requiresPasswordChange: true // Bandera para primer inicio
+            });
+
+            return { success: true, userId };
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw error;
         }
     };
 
@@ -87,7 +123,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateUserEmail,
         updateUserPassword,
-        updateUserNickname
+        updateUserNickname,
+        createNewUser
     };
 
     return (

@@ -14,9 +14,13 @@ import {
     faToggleOff,
     faSave,
     faUserTag,
-    faUserCircle
+    faUserCircle,
+    faUserPlus,
+
 } from '@fortawesome/free-solid-svg-icons';
 import NicknameManager from './NicknameManager';
+import { useNavigate } from 'react-router-dom';
+
 
 const Settings = () => {
     const { currentUser, updateUserEmail, updateUserPassword } = useAuth();
@@ -118,6 +122,7 @@ const Settings = () => {
         }
     };
 
+    const navigate = useNavigate();
     return (
         <div className="container">
             <div style={{ marginBottom: '30px' }}>
@@ -205,6 +210,39 @@ const Settings = () => {
                     </>
                 )}
             </div>
+
+            {currentUser?.isSuperUser && (
+                <>
+                    <button
+                        onClick={() => navigate('/create-user')}
+                        style={{
+                            padding: '12px 24px',
+                            background: 'var(--glass-bg)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginLeft: 'auto',
+                            marginBottom: '20px'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--accent-color)';
+                            e.currentTarget.style.color = 'var(--primary-color)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--glass-bg)';
+                            e.currentTarget.style.color = 'var(--text-primary)';
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faUserPlus} />
+                        Nuevo Usuario
+                    </button>
+                </>
+            )}
 
             {/* Mensajes de estado */}
             {error && (
