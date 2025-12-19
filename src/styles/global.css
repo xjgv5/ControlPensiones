@@ -1,0 +1,199 @@
+:root {
+    --primary-color: #0f0f23;
+    --secondary-color: #1a1a2e;
+    --accent-color: #00ff9d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0d0;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #00cc7a 100%);
+    color: var(--primary-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2);
+}
+
+.btn-secondary {
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.input-field {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 300px) {
+    .container {
+        padding: 10px;
+    }
+
+    .glass {
+        border-radius: 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+
+/* Animaciones */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 157, 0.8);
+}
+
+/* Estados para elementos interactivos */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 300px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 20px !important;
+    }
+
+    h2 {
+        font-size: 18px !important;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 10px 16px !important;
+        font-size: 14px !important;
+    }
+}
+
+@media (min-width: 768px) {
+
+    /* Sidebar adjustments */
+    .main-content {
+        margin-left: 250px;
+    }
+
+    /* Hide mobile menu button on desktop */
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    /* Show sidebar always on desktop */
+    .sidebar {
+        width: 250px !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding: 30px;
+    }
+}
