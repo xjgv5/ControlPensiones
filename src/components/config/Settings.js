@@ -12,8 +12,11 @@ import {
     faUsers,
     faToggleOn,
     faToggleOff,
-    faSave
+    faSave,
+    faUserTag,
+    faUserCircle
 } from '@fortawesome/free-solid-svg-icons';
+import NicknameManager from './NicknameManager';
 
 const Settings = () => {
     const { currentUser, updateUserEmail, updateUserPassword } = useAuth();
@@ -156,29 +159,50 @@ const Settings = () => {
                         gap: '8px'
                     }}
                 >
-                    <FontAwesomeIcon icon={faUser} />
+                    <FontAwesomeIcon icon={faUserCircle} />
                     Perfil
                 </button>
 
                 {currentUser?.isSuperUser && (
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        style={{
-                            padding: '12px 24px',
-                            background: activeTab === 'users' ? 'var(--accent-color)' : 'var(--glass-bg)',
-                            color: activeTab === 'users' ? 'var(--primary-color)' : 'var(--text-primary)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faUsers} />
-                        Usuarios
-                    </button>
+                    <>
+                        <button
+                            onClick={() => setActiveTab('nicknames')}
+                            style={{
+                                padding: '12px 24px',
+                                background: activeTab === 'nicknames' ? 'var(--accent-color)' : 'var(--glass-bg)',
+                                color: activeTab === 'nicknames' ? 'var(--primary-color)' : 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <FontAwesomeIcon icon={faUserTag} />
+                            Nicknames
+                        </button>
+
+                        <button
+                            onClick={() => setActiveTab('users')}
+                            style={{
+                                padding: '12px 24px',
+                                background: activeTab === 'users' ? 'var(--accent-color)' : 'var(--glass-bg)',
+                                color: activeTab === 'users' ? 'var(--primary-color)' : 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <FontAwesomeIcon icon={faUsers} />
+                            Usuarios
+                        </button>
+                    </>
                 )}
             </div>
 
@@ -220,9 +244,42 @@ const Settings = () => {
                         alignItems: 'center',
                         gap: '10px'
                     }}>
-                        <FontAwesomeIcon icon={faUser} />
+                        <FontAwesomeIcon icon={faUserCircle} />
                         Información del Perfil
                     </h2>
+
+                    {/* Mostrar nickname actual */}
+                    {currentUser?.nickname && (
+                        <div style={{
+                            marginBottom: '20px',
+                            padding: '15px',
+                            background: 'rgba(0, 255, 157, 0.05)',
+                            borderRadius: '10px',
+                            border: '1px solid rgba(0, 255, 157, 0.1)'
+                        }}>
+                            <div style={{
+                                fontSize: '14px',
+                                color: 'var(--text-secondary)',
+                                marginBottom: '5px'
+                            }}>
+                                Tu nickname actual:
+                            </div>
+                            <div style={{
+                                fontSize: '18px',
+                                color: 'var(--accent-color)',
+                                fontWeight: 'bold'
+                            }}>
+                                {currentUser.nickname}
+                            </div>
+                            <div style={{
+                                fontSize: '12px',
+                                color: 'var(--text-secondary)',
+                                marginTop: '8px'
+                            }}>
+                                Este nickname se muestra en el sidebar. Solo los superusuarios pueden modificarlo.
+                            </div>
+                        </div>
+                    )}
 
                     <form onSubmit={handleUpdateProfile}>
                         <div style={{ display: 'grid', gap: '20px', marginBottom: '30px' }}>
@@ -311,6 +368,10 @@ const Settings = () => {
                 </div>
             )}
 
+            {activeTab === 'nicknames' && currentUser?.isSuperUser && (
+                <NicknameManager />
+            )}
+
             {activeTab === 'users' && currentUser?.isSuperUser && (
                 <div className="glass" style={{ padding: '30px' }}>
                     <h2 style={{
@@ -350,28 +411,52 @@ const Settings = () => {
                                         gap: '15px'
                                     }}
                                 >
-                                    <div>
+                                    <div style={{ flex: 1 }}>
                                         <div style={{
                                             fontSize: '16px',
                                             color: 'var(--text-primary)',
-                                            marginBottom: '5px'
+                                            marginBottom: '5px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
                                         }}>
-                                            {user.email}
+                                            <span>{user.email}</span>
                                             {user.id === currentUser.uid && (
                                                 <span style={{
                                                     fontSize: '12px',
                                                     background: 'var(--accent-color)',
                                                     color: 'var(--primary-color)',
                                                     padding: '2px 8px',
-                                                    borderRadius: '10px',
-                                                    marginLeft: '10px'
+                                                    borderRadius: '10px'
                                                 }}>
                                                     Tú
                                                 </span>
                                             )}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                                            Registrado: {new Date(user.createdAt?.toDate()).toLocaleDateString()}
+
+                                        {user.nickname && (
+                                            <div style={{
+                                                fontSize: '14px',
+                                                color: 'var(--accent-color)',
+                                                fontWeight: 'bold',
+                                                marginBottom: '5px'
+                                            }}>
+                                                {user.nickname}
+                                            </div>
+                                        )}
+
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: 'var(--text-secondary)',
+                                            display: 'flex',
+                                            gap: '15px',
+                                            flexWrap: 'wrap'
+                                        }}>
+                                            <span>ID: {user.id.substring(0, 10)}...</span>
+                                            <span>Registrado: {new Date(user.createdAt?.toDate()).toLocaleDateString()}</span>
+                                            {user.updatedAt && (
+                                                <span>Actualizado: {new Date(user.updatedAt?.toDate()).toLocaleDateString()}</span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -434,7 +519,7 @@ const Settings = () => {
                             <strong>Nota sobre privilegios de Super Usuario:</strong>
                         </div>
                         <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            Los Super Usuarios pueden editar todas las pensiones y gestionar otros usuarios.
+                            Los Super Usuarios pueden editar todas las pensiones, gestionar otros usuarios y configurar nicknames.
                             Solo se puede cambiar el estado de Super Usuario de otros usuarios, no el propio.
                         </p>
                     </div>

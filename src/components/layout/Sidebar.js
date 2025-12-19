@@ -9,7 +9,8 @@ import {
     faCog,
     faSignOutAlt,
     faBars,
-    faTimes
+    faTimes,
+    faUserCircle
 } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/global.css';
 
@@ -30,7 +31,7 @@ const Sidebar = () => {
     const menuItems = [
         { path: '/dashboard', icon: faHome, label: 'Dashboard' },
         { path: '/create-pension', icon: faPlusCircle, label: 'Crear Pensión' },
-        { path: '/active-pensions', icon: faList, label: 'Ver Pensiones' },
+        { path: '/active-pensions', icon: faList, label: 'Pensiones Activas' },
         ...(currentUser?.isSuperUser
             ? [{ path: '/config', icon: faCog, label: 'Configuración' }]
             : []
@@ -103,33 +104,77 @@ const Sidebar = () => {
                 zIndex: 1000
             }}>
                 <div style={{ padding: '20px' }}>
+                    {/* Sección de usuario mejorada */}
                     <div style={{
                         textAlign: 'center',
                         marginBottom: '30px',
-                        marginTop: '60px'
+                        marginTop: '60px',
+                        paddingBottom: '20px',
+                        borderBottom: '1px solid var(--glass-border)'
                     }}>
-                        <h2 style={{
-                            fontSize: '18px',
-                            color: 'var(--accent-color)'
+                        {/* Avatar/Icono del usuario */}
+                        <div style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, var(--accent-color) 0%, #00cc7a 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 15px',
+                            fontSize: '30px',
+                            color: 'var(--primary-color)'
                         }}>
-                            Control Pensiones
-                        </h2>
-                        <p style={{
+                            <FontAwesomeIcon icon={faUserCircle} />
+                        </div>
+
+                        {/* Mensaje de bienvenida */}
+                        <div style={{
                             fontSize: '12px',
+                            color: 'var(--accent-color)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            marginBottom: '5px',
+                            fontWeight: '600'
+                        }}>
+                            Bienvenid@
+                        </div>
+
+                        {/* Nickname (principal) */}
+                        <div style={{
+                            fontSize: '18px',
+                            color: 'var(--text-primary)',
+                            marginBottom: '8px',
+                            fontWeight: 'bold',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            {currentUser?.nickname || currentUser?.email?.split('@')[0]}
+                        </div>
+
+                        {/* Email (secundario) */}
+                        <div style={{
+                            fontSize: '11px',
                             color: 'var(--text-secondary)',
-                            marginTop: '5px'
+                            marginBottom: '10px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
                         }}>
                             {currentUser?.email}
-                        </p>
+                        </div>
+
+                        {/* Badge de superusuario */}
                         {currentUser?.isSuperUser && (
                             <span style={{
                                 fontSize: '10px',
                                 background: 'var(--accent-color)',
                                 color: 'var(--primary-color)',
-                                padding: '2px 8px',
-                                borderRadius: '10px',
+                                padding: '3px 10px',
+                                borderRadius: '12px',
                                 display: 'inline-block',
-                                marginTop: '5px'
+                                fontWeight: '600'
                             }}>
                                 Super Usuario
                             </span>
@@ -155,7 +200,11 @@ const Sidebar = () => {
                             cursor: 'pointer',
                             borderRadius: '12px',
                             transition: 'all 0.3s ease',
-                            marginTop: '20px'
+                            marginTop: '20px',
+                            position: 'absolute',
+                            bottom: '20px',
+                            left: '0',
+                            right: '0'
                         }}
                         onMouseEnter={(e) => {
                             e.target.style.background = 'var(--glass-bg)';

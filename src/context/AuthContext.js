@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
         if (!userDoc.exists()) {
             await setDoc(doc(db, 'users', userCredential.user.uid), {
                 email: userCredential.user.email,
+                nickname: email.split('@')[0], // Nickname por defecto
                 isSuperUser: false,
                 createdAt: new Date()
             });
@@ -38,13 +39,38 @@ export const AuthProvider = ({ children }) => {
 
     const updateUserPassword = (password) => updatePassword(currentUser, password);
 
+    // Función para actualizar el nickname (solo superusuario)
+    const updateUserNickname = async (userId, newNickname) => {
+        if (!currentUser?.isSuperUser) {
+            throw new Error('Solo los superusuarios pueden cambiar nicknames');
+        }
+
+        const userRef = doc(db, 'users', userId);
+        await setDoc(userRef, {
+            nickname: newNickname,
+            updatedAt: new Date()
+        }, { merge: true });
+
+        // Si es el usuario actual, actualizar el estado
+        if (userId === currentUser.uid) {
+            setCurrentUser(prev => ({
+                ...prev,
+                nickname: newNickname
+            }));
+        }
+    };
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userData = userDoc.exists() ? userDoc.data() : {};
+
                 setCurrentUser({
                     ...user,
-                    isSuperUser: userDoc.exists() ? userDoc.data().isSuperUser : false
+                    isSuperUser: userData.isSuperUser || false,
+                    nickname: userData.nickname || user.email.split('@')[0], // Default
+                    ...userData
                 });
             } else {
                 setCurrentUser(null);
@@ -60,7 +86,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateUserEmail,
-        updateUserPassword
+        updateUserPassword,
+        updateUserNickname
     };
 
     return (
