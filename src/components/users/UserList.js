@@ -215,7 +215,7 @@ const UserList = () => {
                     gap: '10px'
                 }}>
                     <FontAwesomeIcon icon={faUsers} />
-                    Gestión de Usuarios prueba de duplicado
+                    Gestión de Usuarios
                 </h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
                     Administra todos los usuarios del sistema desde un solo lugar

@@ -7,10 +7,12 @@ import {
     faEnvelope,
     faLock,
     faSave,
-    faUserCircle
+    faUserCircle,
+    faBell
 } from '@fortawesome/free-solid-svg-icons';
 import UserList from '../users/UserList';
 import { toast } from '../../App';
+import NotificationSettings from './NotificationSettings';
 
 const Settings = () => {
     const { currentUser, updateUserEmail, updateUserPassword } = useAuth();
@@ -119,6 +121,26 @@ const Settings = () => {
                 >
                     <FontAwesomeIcon icon={faUserCircle} />
                     Perfil
+                </button>
+
+
+                <button
+                    onClick={() => setActiveTab('notifications')}
+                    style={{
+                        padding: '12px 24px',
+                        background: activeTab === 'notifications' ? 'var(--accent-color)' : 'var(--glass-bg)',
+                        color: activeTab === 'notifications' ? 'var(--primary-color)' : 'var(--text-primary)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <FontAwesomeIcon icon={faBell} />
+                    Notificaciones
                 </button>
 
                 {currentUser?.isSuperUser && (
@@ -303,6 +325,10 @@ const Settings = () => {
                         </div>
                     </form>
                 </div>
+            )}
+
+            {activeTab === 'notifications' && (
+                <NotificationSettings />
             )}
 
             {activeTab === 'users' && currentUser?.isSuperUser && (

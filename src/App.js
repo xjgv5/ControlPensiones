@@ -14,11 +14,25 @@ import CreateUser from './components/users/CreateUser';
 import ActivePensions from './components/pensions/ActivePensions';
 import Settings from './components/config/Settings';
 import './styles/global.css';
-
+import { useEffect } from 'react';
+import { initNotifications } from './services/notificationService';
+import { updateUserActivity } from './services/notificationService';
 // Exportar toast para usarlo en otros componentes
 export { toast };
 
+
 function App() {
+  useEffect(() => {
+    // Inicializar notificaciones
+    initNotifications();
+
+    // Registrar actividad cada 30 minutos
+    const activityInterval = setInterval(() => {
+      updateUserActivity();
+    }, 30 * 60 * 1000);
+
+    return () => clearInterval(activityInterval);
+  }, []);
   return (
     <ErrorBoundary>
       <Router>
